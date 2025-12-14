@@ -240,7 +240,9 @@ function updatePosts() {
 
 
 
-
+// ==========================
+// Carousel _id5 - Fully Working
+// ==========================
 
 const track_id5 = document.querySelector(".carousel-track_id5");
 const cards_id5 = Array.from(track_id5.children);
@@ -250,14 +252,15 @@ const container_id5 = document.querySelector(".carousel-container_id5");
 const indicators_id5 = document.querySelectorAll(".indicator_id5");
 
 let currentIndex_id5 = 0;
-let cardWidth_id5 = cards_id5[0].offsetWidth;
-let cardMargin_id5 = parseInt(window.getComputedStyle(cards_id5[0]).marginRight) * 2;
+let cardWidth_id5 = 0;
+let cardMargin_id5 = 0;
 
-
+// Debounce helper for resize
 function debounce(func, wait, immediate) {
   let timeout;
   return function () {
-    let context = this, args = arguments;
+    let context = this,
+      args = arguments;
     let later = function () {
       timeout = null;
       if (!immediate) func.apply(context, args);
@@ -269,21 +272,24 @@ function debounce(func, wait, immediate) {
   };
 }
 
-// Initialize carousel
+// Initialize carousel: recalc widths and margins
 function initializeCarousel_id5() {
   cardWidth_id5 = cards_id5[0].offsetWidth;
-  cardMargin_id5 = parseInt(window.getComputedStyle(cards_id5[0]).marginRight) * 2;
+  const style = window.getComputedStyle(cards_id5[0]);
+  cardMargin_id5 = parseInt(style.marginLeft) + parseInt(style.marginRight);
 
-  const initialOffset = container_id5.offsetWidth / 2 - cardWidth_id5 / 2;
-  track_id5.style.transform = `translateX(${initialOffset}px)`;
   updateCarousel_id5();
 }
 
-// Update cards & indicators
+// Update classes and indicators
 function updateCarousel_id5() {
   cards_id5.forEach((card, index) => {
     card.classList.remove(
-      "is-active_id5", "is-prev_id5", "is-next_id5", "is-far-prev_id5", "is-far-next_id5"
+      "is-active_id5",
+      "is-prev_id5",
+      "is-next_id5",
+      "is-far-prev_id5",
+      "is-far-next_id5"
     );
     if (index === currentIndex_id5) card.classList.add("is-active_id5");
     else if (index === currentIndex_id5 - 1) card.classList.add("is-prev_id5");
@@ -297,7 +303,7 @@ function updateCarousel_id5() {
   });
 }
 
-// Move to slide
+// Move to a specific slide
 function moveToSlide_id5(targetIndex) {
   if (targetIndex < 0 || targetIndex >= cards_id5.length) return;
 
@@ -307,9 +313,10 @@ function moveToSlide_id5(targetIndex) {
   const targetTranslateX = containerCenter - cardCenter - amountToMove;
 
   track_id5.style.transform = `translateX(${targetTranslateX}px)`;
+  track_id5.style.transition = "transform 0.75s cubic-bezier(0.21, 0.61, 0.35, 1)";
   currentIndex_id5 = targetIndex;
   updateCarousel_id5();
-  handleCardActivation_id5();
+  handleCardActivation_id5?.(); // optional if you have extra activation logic
 }
 
 // Buttons
@@ -321,8 +328,13 @@ indicators_id5.forEach((indicator, index) => {
   indicator.addEventListener("click", () => moveToSlide_id5(index));
 });
 
-// Swipe
-let isDragging_id5 = false, startPos_id5 = 0, currentTranslate_id5 = 0, prevTranslate_id5 = 0, animationID_id5;
+// Swipe / drag support
+let isDragging_id5 = false,
+  startPos_id5 = 0,
+  currentTranslate_id5 = 0,
+  prevTranslate_id5 = 0,
+  animationID_id5;
+
 track_id5.addEventListener("mousedown", dragStart_id5);
 track_id5.addEventListener("touchstart", dragStart_id5, { passive: true });
 track_id5.addEventListener("mousemove", drag_id5);
@@ -364,8 +376,10 @@ function dragEnd_id5() {
   track_id5.style.cursor = "grab";
   const movedBy = currentTranslate_id5 - prevTranslate_id5;
   const threshold = cardWidth_id5 / 3.5;
-  if (movedBy < -threshold && currentIndex_id5 < cards_id5.length - 1) moveToSlide_id5(currentIndex_id5 + 1);
-  else if (movedBy > threshold && currentIndex_id5 > 0) moveToSlide_id5(currentIndex_id5 - 1);
+  if (movedBy < -threshold && currentIndex_id5 < cards_id5.length - 1)
+    moveToSlide_id5(currentIndex_id5 + 1);
+  else if (movedBy > threshold && currentIndex_id5 > 0)
+    moveToSlide_id5(currentIndex_id5 - 1);
   else moveToSlide_id5(currentIndex_id5);
 }
 
@@ -374,16 +388,19 @@ function getPositionX_id5(event) {
 }
 
 // Keyboard navigation
-document.addEventListener("keydown", e => {
+document.addEventListener("keydown", (e) => {
   if (e.key === "ArrowRight" || e.key === "ArrowDown") moveToSlide_id5(currentIndex_id5 + 1);
   if (e.key === "ArrowLeft" || e.key === "ArrowUp") moveToSlide_id5(currentIndex_id5 - 1);
 });
 
-// Resize
-window.addEventListener("resize", debounce(() => {
-  initializeCarousel_id5();
-  moveToSlide_id5(currentIndex_id5);
-}, 250));
+// Handle window resize
+window.addEventListener(
+  "resize",
+  debounce(() => {
+    initializeCarousel_id5();
+    moveToSlide_id5(currentIndex_id5);
+  }, 250)
+);
 
 // Floating effect
 function addFloatingEffect_id5() {
@@ -403,12 +420,13 @@ function addFloatingEffect_id5() {
   document.head.appendChild(style);
 }
 
-// Initialize
-window.onload = () => {
+// Initialize carousel on load
+window.addEventListener("load", () => {
   initializeCarousel_id5();
-  moveToSlide_id5(2);
+  moveToSlide_id5(0); // first card
   addFloatingEffect_id5();
-};
+});
+
 
 
 
@@ -594,6 +612,6 @@ function addFloatingEffect_id6() {
 // Initialize
 window.onload = () => {
   initializeCarousel_id6();
-  moveToSlide_id6(2);
+  moveToSlide_id6(0);
   addFloatingEffect_id6();
 };
